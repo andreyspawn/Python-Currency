@@ -28,8 +28,11 @@ print(cursor.fetchall())
 
 print('Получение курсов валют')
 
+# https://bank.gov.ua/NBU_Exchange/exchange?json - текущая дата
+# https://bank.gov.ua/NBU_Exchange/exchange?date=26.12.2020&json -на заданную дату
 
-response = requests.get('https://bank.gov.ua/NBU_Exchange/exchange?date=26.12.2020&json')
+
+response = requests.get('https://bank.gov.ua/NBU_Exchange/exchange?json')
 
 if response.status_code == 200:
 	print('Запрос рабочий, статус ответа:',response.status_code)
@@ -38,4 +41,8 @@ elif response.status_code != 200:
 	print('Запрос нерабочий, проверьте, не изменился ли запрос на сайте bank.gov.ua', responce.status_code)
 
 
+# преобразуем ответ в объект json
+list_of_currency = response.json()
 
+for curr in list_of_currency:
+	print(curr)
