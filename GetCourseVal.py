@@ -44,5 +44,8 @@ elif response.status_code != 200:
 # преобразуем ответ в объект json
 list_of_currency = response.json()
 
+print(list_of_currency)
+
 for curr in list_of_currency:
 	print(curr)
+	print(curr['CurrencyCode'])
