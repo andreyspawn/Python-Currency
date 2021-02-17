@@ -14,18 +14,18 @@ def open_ini(file_name:str):
 	return config
 
 # открываем файл и считываем строки с преобразованием их в список наборов
-def form_list_valut(file_name:str):
-	list_valut = []
-	with open(file_name,encoding='utf-8') as file_sprav:
-		for chore in file_sprav:
-			print(chore)
-			list_valut.append(chore.split('\t'))
-			# list_valut .append(chore_list) 
-	return list_valut
+# def form_list_valut(file_name:str):
+# 	list_valut = []
+# 	with open(file_name,encoding='utf-8') as file_sprav:
+# 		for chore in file_sprav:
+# 			print(chore)
+# 			list_valut.append(chore.split('\t'))
+# 			# list_valut .append(chore_list) 
+# 	return list_valut
 
 
-# читаем текстовый файл, как csv и все его записи заносим
-# в таблицу справочника валют под названием currency
+# читаем текстовый файл, как csv 
+# и все его записи возвращаем в виде списка словарей
 def read_Currency_list(file_name:str):
 	currency_list = []
 	with open(file_name, encoding='utf-8') as csvfile:
@@ -34,7 +34,7 @@ def read_Currency_list(file_name:str):
 			currency_list.append(row)
 	return currency_list
 
-
+# ТЕЛО СКРИПТА
 
 #initialize ini-file
 config = open_ini('config.ini')
@@ -57,12 +57,6 @@ else:
 	cursor = conn.cursor()
 
 
-# variant 1 to check for extension table in database 
-_SQL = 'check table ' + dbconfig['database'] + '.valut'
-cursor.execute(_SQL)
-print(cursor.fetchall())
-
-
 # variant 2 to check for extension table in database 
 _SQL = 'show tables like ' + '\'currency\''
 cursor.execute(_SQL)
@@ -74,25 +68,24 @@ try:
 except Exception:
 	print('Таблички нет!!!!!')
 
-
-#print(form_list_valut())
-
 # делаем заливку данных по валюте из CSV в базу данных - таблица currency
+# считываем в переменную currency_list список словарей
 currency_list = read_Currency_list('SpravVal.txt')
-#print(currency_list)
+# Перебираем список поэлементно - выбираем каждый словарь из списка
 for row in currency_list:
-	print(row['CurrencyCode'])
+	# Делаем запрос из таблицы справочника валют по коду валюты
 	_SQL = 'SELECT CurrencyCode from currency where CurrencyCode = \'' + row['CurrencyCode']+'\''
 	cursor.execute(_SQL)
-	sql_list = cursor.fetchall() 
-
-	if row['CurrencyCode'] not in sql_list:
-		_SQL = 'INSERT Currency(CurrencyCode,CurrencyCodeL,Units,CurrencyNameUA,CurrencyNameRU) VALUES(' + \
-		        row['CurrencyCode'] + ',\'' + \
-		        row['CurrencyCodeL'] + '\',' + \
-		        row['Units'] + ',\'' + \
-		        row['CurrencyNameUA'] + '\',\'' + \
-		        row['CurrencyNameRU'] + '\')'
-	print(_SQL)
-	cursor.execute(_SQL)
-	cursor.execute('COMMIT')
+	#Если результат запроса пустой - то есть длина списка равна 0 
+	sql_list = cursor.fetchall()
+	if len(sql_list) == 0:
+			# if row['CurrencyCode'] in sql_list[0]:
+			# Тогда формируем запрос на добавление новой строки в справочник
+			_SQL = 'INSERT Currency(CurrencyCode,CurrencyCodeL,Units,CurrencyNameUA,CurrencyNameRU) VALUES(\'' + \
+		 	        row['CurrencyCode'] + '\',\'' + \
+		 	        row['CurrencyCodeL'] + '\',' + \
+		 	        row['Units'] + ',\'' + \
+		 	        row['CurrencyNameUA'] + '\',\'' + \
+		 	        row['CurrencyNameRU'] + '\')'
+			cursor.execute(_SQL)
+			cursor.execute('COMMIT')
