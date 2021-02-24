@@ -49,19 +49,22 @@ list_of_currency = response.json()
 print(list_of_currency)
 print("Этап номер ФИНАЛ")
 for curr in list_of_currency:
-	print(curr)
-	print(curr['CurrencyCode'])
-
-	# Делаем запрос из таблицы справочника валют по коду валюты
+		# Делаем запрос из таблицы справочника валют по коду валюты
 	_SQL = f"SELECT CurrencyCode from currency where CurrencyCode = \'{curr['CurrencyCode']}\'"
 	cursor.execute(_SQL)
-	sql_result = cursor.fetchall()
+	sql_result_currency = cursor.fetchall()
+    # Делаем запрос по коду валюты и наличию курса для данной валюты из таблицы курсов валют
+	_SQL = f"SELECT CurrencyCode from Exchange_Rate where CurrencyCode = \'{curr['CurrencyCode']}\' and date_ExchangeRate=\'{curr['StartDate']}\'"
+	cursor.execute(_SQL)
+	sql_result_Exchange_Rate  = cursor.fetchall()
 	# если валюта есть в справочнике просто добавляем ее в курс валют, в противном случае
 	# нужно отразить в журнале отсутствие данной замечательной валюты
-	if len(sql_result)!=0:
-		print(sql_result)
-		
-		_SQL = f"INSERT Exchange_rate(date_ExchangeRate,CurrencyCode,amount) VALUES({curr['StartDate']},{curr['CurrencyCode']},{curr['Amount']})"
-		print(_SQL)
+	if len(sql_result_currency)!=0 and len(sql_result_Exchange_Rate)!=0:
+		print(sql_result_currency," И вот такой результат", sql_result_Exchange_Rate)
+		date1 = datetime.strptime(curr['StartDate'],"%d.%m.%Y").date()
+		print("Дата вот такая",date1)
+		_SQL = f"INSERT Exchange_rate(date_ExchangeRate,CurrencyCode,amount) VALUES(\'{date1}\',\'{curr['CurrencyCode']}\',{curr['Amount']})"
+		cursor.execute(_SQL)
+		cursor.execute('COMMIT')
 	# else:
 		# print("Да такая ФИГНЯ УЖЕ ЕСТЬ")
