@@ -24,7 +24,7 @@ conn = mysql.connector.connect(**dbconfig)
 cursor = conn.cursor()
 
 cursor.execute("show databases")
-print(cursor.fetchall())
+cursor.fetchall()
 
 
 print('Получение курсов валют')
@@ -46,10 +46,9 @@ elif response.status_code != 200:
 list_of_currency = response.json()
 
 # И теперь перебираем список валют по циклу
-print(list_of_currency)
-print("Этап номер ФИНАЛ")
+# print(list_of_currency)
 for curr in list_of_currency:
-		# Делаем запрос из таблицы справочника валют по коду валюты
+	# Делаем запрос из таблицы справочника валют по коду валюты
 	_SQL = f"SELECT CurrencyCode from currency where CurrencyCode = \'{curr['CurrencyCode']}\'"
 	cursor.execute(_SQL)
 	sql_result_currency = cursor.fetchall()
@@ -66,5 +65,4 @@ for curr in list_of_currency:
 		_SQL = f"INSERT Exchange_rate(date_ExchangeRate,CurrencyCode,amount) VALUES(\'{date1}\',\'{curr['CurrencyCode']}\',{curr['Amount']})"
 		cursor.execute(_SQL)
 		cursor.execute('COMMIT')
-	# else:
-		# print("Да такая ФИГНЯ УЖЕ ЕСТЬ")
+
